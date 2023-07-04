@@ -1,10 +1,29 @@
+"""
+                      _______ _____ _____     _____ _____  
+                     |__   __/ ____|  __ \   / ____/ ____| 
+                        | | | |    | |__) | | |   | |      
+                        | | | |    |  ___/  | |   | |      
+                        | | | |____| |      | |___| |____  
+                        |_|  \_____|_|       \_____\_____| 
+                                                           
+
+Description: Transmission Control Protocol covert channel through reordering
+             options in Domain Name Service keep alive tcp packets
+
+@author: Rashed Alnuman
+@Email : Rashed123numan@gmail.com
+@Language : Python 3
+"""
+
+
 from scapy.all import *
+
 
 """
 Secret Message
 
-undr brdge@925p
-01110101 01101110 01100100 01110010 00100000 01100010 01110010 01100100 01100111 01100101 01000000 00111001 00110010 00110101 01110000 
+string: undr brdge@925p
+binary: 011101010110111001100100011100100010000001100010011100100110010001100111011001010100000000111001001100100011010101110000 
 """
 
 
@@ -51,94 +70,6 @@ def encoding_algorithm(msg):
     return manipulated_options
             
 
-#encoding_algorithm("undr brdge@925p")
-encoding_algorithm("FF")
-
-def test1():
-    # Create a TCP options object with desired options
-    tcp_options = [("MSS", 1460), ("NOP", None), ("WScale", 2)]
-
-    # Create the TCP layer with options
-    tcp = TCP(sport=25565, dport=2556, flags="A", seq=1000, dataofs=8, options=tcp_options)
-
-    """
-    the offset field determines the size of the header, dataofs = 5 means 20 bytes which means options
-    will be removed, thats why if the offset is 5 the options field will disapear
-    """
-
-    #tcp = TCP(sport=25565 , dport=25565, flags="A", seq=1000, dataofs=5, options=tcp_options)
-
-    # Set the desired source and destination ports
-    src_port = 12345
-    dst_port = 12345
-
-    # Create the IP packet with TCP layer
-    ip = IP(src="192.168.1.109", dst="192.168.1.1")
-    packet = ip / tcp
-
-
-    # Display the packet summary
-    packet.summary()
-    send(packet)
-
-
-
-def test2():
-    
-
-
-    #when we set the data offset value to 5 in the TCP header,
-    #it means that the TCP header is 5 words long.
-
-    #Since each word is 4 bytes, a data offset value of 5
-    #corresponds to a TCP header size of 5 * 4 bytes, which
-    #is 20 bytes. The first 20 bytes of a TCP segment will
-    #be dedicated to the TCP header.
-
-    # 20 to 60 bytes header size
-
-    # Creating TCP header
-    ip = IP(src="192.168.1.109", dst="192.168.1.100")
-
-    # Create TCP header with initial options
-    tcp_options = [("NOP", None), ("NOP", None), ("EOL", None)]
-    tcp = TCP(sport=25565, dport=25565, flags="A", seq=1000, options=tcp_options)
-
-    # Calculate the length of the TCP header and options
-    tcp_header_length = len(tcp)
-    tcp_options_length = sum([len(opt) for opt in tcp.options])
-
-    # Calculate the number of padding bytes needed
-    padding_bytes = 32 - tcp_header_length - tcp_options_length
-
-    # Add padding bytes
-
-
-    # Recalculate TCP checksum
-
-    #tcp.options += b'\x00' * padding_bytes
-
-    tcp.options += [('NOP', None)] * padding_bytes
-
-    del tcp[TCP].chksum
-
-    print(len(tcp))
-    
-    # Combine IP and TCP headers
-    packet = ip / tcp
-
-    # Show the packet details
-    packet.show2(dump=True)
-    packet.show()
-
-    # Send the packet
-    send(packet)
-    
-    
-
-#test1()
-#test2()
-
 
 """
 TCP OPTION SIZES
@@ -161,17 +92,6 @@ pointer (4 bytes). The total size of the SACK option is variable based on the nu
 Timestamps: The Timestamps option consists of the option kind field (1 byte), option length field
 (1 byte), the sender's timestamp value (4 bytes), and the echo reply timestamp value (4 bytes).
 So, the total size is 10 bytes.
-
-#if bit == '0':
-            
-                #manipulated_options.extend(tuple(options['a'+bit+str(order)].split()))
-                #order += 1
-            
-            #elif bit == '1':
-           
-                #manipulated_options.extend(tuple(options['a'+bit+str(order)].split()))
-                #order += 1
-
 """
 
 
